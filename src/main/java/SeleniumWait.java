@@ -3,19 +3,21 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import pages.impl.HomePage;
+import pages.impl.SearchResultsPage;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 public class SeleniumWait {
-    private static WebDriver driver;
+
+    private static final String SEARCH_PHRASE = "selenium";
+    private static ChromeDriver driver;
+    private static WebDriverWait wait;
 
     @BeforeAll
     public static void setUpDriver(){
@@ -24,26 +26,29 @@ public class SeleniumWait {
         driver.manage().window().maximize();
     }
 
+    @BeforeAll
+    public static void setUpWait(){
+        wait = new WebDriverWait(driver,15);
+    }
+
+    private static void switchOffImplicitWait() {
+        driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+    }
+
+
     @Test
     public void checkGithubSearch(){
         driver.get("https://github.com/");
 
-        WebElement searchInput = driver.findElement(By.cssSelector("[name='q']"));
+        HomePage homePage = new HomePage(driver);
 
-        String searchPhrase = "selenium";
-        searchInput.sendKeys(searchPhrase);
-        searchInput.sendKeys(Keys.ENTER);
+        SearchResultsPage searchResultsPage = new SearchResultsPage(driver);
 
-        List<String> actualItems = driver.findElements(By.cssSelector(".repo-list-item")).stream()
-                .map(element -> element.getText().toLowerCase())
-                .collect(Collectors.toList());
+        homePage.performSearch(SEARCH_PHRASE);
 
-        List<String> expectedItems = actualItems.stream()
-                .filter(item ->item.contains(searchPhrase))
-                .collect(Collectors.toList());
+        List<String> actualItems = searchResultsPage.searchResultsItemsText();
+        List<String> expectedItems = searchResultsPage.searchResultsItemsWithText(SEARCH_PHRASE);
 
-        System.out.println(LocalDateTime.now());
-        Assertions.assertTrue(driver.findElement(By.cssSelector("[title='invalid title']")).isDisplayed());
         Assertions.assertEquals(expectedItems,actualItems);
     }
 
