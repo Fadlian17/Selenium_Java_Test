@@ -44,7 +44,7 @@ public class SeleniumWait {
 
         SearchResultsPage searchResultsPage = new SearchResultsPage(driver);
 
-        homePage.performSearch(SEARCH_PHRASE);
+        homePage.searchComponent().performSearch(SEARCH_PHRASE);
 
         List<String> actualItems = searchResultsPage.searchResultsItemsText();
         List<String> expectedItems = searchResultsPage.searchResultsItemsWithText(SEARCH_PHRASE);
